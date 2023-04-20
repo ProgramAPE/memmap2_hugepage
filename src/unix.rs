@@ -172,6 +172,18 @@ impl MmapInner {
         )
     }
 
+    /// Open an anonymous memory map.
+    pub fn map_anon_hugepages(len: usize, stack: bool) -> io::Result<MmapInner> {
+        let stack = if stack { MAP_STACK } else { 0 };
+        MmapInner::new(
+            len,
+            libc::PROT_READ | libc::PROT_WRITE,
+            libc::MAP_PRIVATE | libc::MAP_ANON | libc::MAP_HUGETLB| stack,
+            -1,
+            0,
+        )
+    }
+
     pub fn flush(&self, offset: usize, len: usize) -> io::Result<()> {
         let alignment = (self.ptr as usize + offset) % page_size();
         let offset = offset as isize - alignment as isize;

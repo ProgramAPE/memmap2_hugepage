@@ -485,6 +485,20 @@ impl MmapOptions {
         MmapInner::map_anon(len, self.stack).map(|inner| MmapMut { inner })
     }
 
+    pub fn map_anon_hugepages(&self) -> Result<MmapMut> {
+        let len = self.len.unwrap_or(0);
+
+        // See get_len() for details.
+        if mem::size_of::<usize>() < 8 && len > isize::MAX as usize {
+            return Err(Error::new(
+                ErrorKind::InvalidData,
+                "memory map length overflows isize",
+            ));
+        }
+
+        MmapInner::map_anon_hugepages(len, self.stack).map(|inner| MmapMut { inner })
+    }
+
     /// Creates a raw memory map.
     ///
     /// # Errors
